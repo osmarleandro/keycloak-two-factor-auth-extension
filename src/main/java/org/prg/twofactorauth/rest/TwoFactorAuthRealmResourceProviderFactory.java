@@ -25,7 +25,7 @@ import org.keycloak.services.resource.RealmResourceProviderFactory;
 
 public class TwoFactorAuthRealmResourceProviderFactory implements RealmResourceProviderFactory {
 
-    public static final String ID = "two_factor_auth";
+    public static final String ID = "two-factor-auth";
 
     @Override
     public String getId() {
