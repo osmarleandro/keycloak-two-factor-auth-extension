@@ -79,6 +79,15 @@ Response: On success empty response with `204` status code will be returned.
 
 If caller do not want to support multiple devices, it is perfectly acceptable to only pass one const device name.
 
+## Contributing
+
+### Build
+
+```
+mvn clean install
+
+cp target/two-factor-auth-rest-api.jar /path/to/destination/keycloak/providers/two-factor-auth-rest-api.jar
+```
 
 ## Creators
 Protoreality Games

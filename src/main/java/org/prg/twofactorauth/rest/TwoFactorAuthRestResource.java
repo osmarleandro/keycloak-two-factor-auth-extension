@@ -5,7 +5,11 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 
-import javax.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 public class TwoFactorAuthRestResource {
 
