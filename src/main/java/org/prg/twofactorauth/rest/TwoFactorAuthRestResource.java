@@ -1,15 +1,15 @@
 package org.prg.twofactorauth.rest;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.UserModel;
+import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
-
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 
 public class TwoFactorAuthRestResource {
 

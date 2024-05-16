@@ -1,5 +1,15 @@
 package org.prg.twofactorauth.rest;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.credential.CredentialProvider;
@@ -19,15 +29,6 @@ import org.prg.twofactorauth.dto.TwoFactorAuthSecretData;
 import org.prg.twofactorauth.dto.TwoFactorAuthSubmission;
 import org.prg.twofactorauth.dto.TwoFactorAuthVerificationData;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Response;
 
 public class User2FAResource {
 
@@ -63,36 +64,46 @@ public class User2FAResource {
         if (!submission.isValid()) {
             throw new BadRequestException("one or more data field for otp validation are blank");
         }
+        final RealmModel realm = this.session.getContext().getRealm();
 
-        final CredentialModel credentialModel = user.credentialManager().getStoredCredentialByNameAndType(submission.getDeviceName(), OTPCredentialModel.TYPE);
-        final CredentialModel passwordCredential = user.credentialManager().getStoredCredentialByNameAndType(null, PasswordCredentialModel.TYPE);
+        // final CredentialModel credentialModel = user.credentialManager().getStoredCredentialByNameAndType(submission.getDeviceName(), OTPCredentialModel.TYPE);
+        final CredentialModel credentialModel = session.userCredentialManager().getStoredCredentialByNameAndType(realm, user, submission.getDeviceName(), OTPCredentialModel.TYPE);
 
         if (credentialModel == null) {
             throw new BadRequestException("device not found");
         }
 
-        if (passwordCredential == null) {
-            throw new BadRequestException("password not found");
-        }
-
         boolean isCredentialsValid;
-        boolean isPasswordValid;
+        boolean isPasswordValid = true;
 
         try {
-            isPasswordValid = user.credentialManager().isValid(new UserCredentialModel(passwordCredential.getId(), passwordCredential.getType(), submission.getPassword()));
+            String submissionPassword = submission.getPassword();
+            if(submissionPassword != null && !submissionPassword.isEmpty()){
+                // final CredentialModel passwordCredential = user.credentialManager().getStoredCredentialByNameAndType(null, PasswordCredentialModel.TYPE);
+                final CredentialModel passwordCredential = session.userCredentialManager().getStoredCredentialByNameAndType(realm, user, null, PasswordCredentialModel.TYPE);
+
+                if (passwordCredential == null) {
+                    throw new BadRequestException("password credential not found");
+                }
+
+                // isPasswordValid = user.credentialManager().isValid(new UserCredentialModel(passwordCredential.getId(), passwordCredential.getType(), submission.getPassword()));
+                isPasswordValid = session.userCredentialManager().isValid(realm, user, new UserCredentialModel(passwordCredential.getId(), passwordCredential.getType(), submissionPassword));
+            }
 
             var otpCredentialProvider = session.getProvider(CredentialProvider.class, "keycloak-otp");
             final OTPCredentialModel otpCredentialModel = OTPCredentialModel.createFromCredentialModel(credentialModel);
             final String credentialId = otpCredentialModel.getId();
             
-            isCredentialsValid = user.credentialManager().isValid(new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
+            // isCredentialsValid = user.credentialManager().isValid(new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
+            isCredentialsValid = session.userCredentialManager().isValid(realm, user, new UserCredentialModel(credentialId, otpCredentialProvider.getType(), submission.getTotpCode()));
+
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw new InternalServerErrorException("internal error");
         }
         
         if(!isPasswordValid){
-            throw new NotAuthorizedException("invalid password", "Bearer");
+            throw new NotAuthorizedException("invalid password when validate totp", "Bearer");
         }
 
         if (!isCredentialsValid) {
@@ -119,7 +130,8 @@ public class User2FAResource {
         }
 
         final RealmModel realm = this.session.getContext().getRealm();
-        final CredentialModel credentialModel = user.credentialManager().getStoredCredentialByNameAndType(submission.getDeviceName(), OTPCredentialModel.TYPE);
+        // final CredentialModel credentialModel = user.credentialManager().getStoredCredentialByNameAndType(submission.getDeviceName(), OTPCredentialModel.TYPE);
+        final CredentialModel credentialModel = session.userCredentialManager().getStoredCredentialByNameAndType(realm, user, submission.getDeviceName(), OTPCredentialModel.TYPE);
         if (credentialModel != null && !submission.isOverwrite()) {
             throw new ForbiddenException("2FA is already configured for device: " + submission.getDeviceName());
         }

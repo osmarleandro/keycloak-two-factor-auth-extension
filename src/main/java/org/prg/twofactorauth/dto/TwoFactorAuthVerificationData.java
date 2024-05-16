@@ -9,7 +9,9 @@ public class TwoFactorAuthVerificationData {
     private final String password;
 
     @JsonCreator
-    public TwoFactorAuthVerificationData(@JsonProperty(value = "device_name") String deviceName, @JsonProperty(value = "totp_initial_code") String totpInitialCode, @JsonProperty(value = "password") String password) {
+    public TwoFactorAuthVerificationData(@JsonProperty(value = "device_name") String deviceName,
+            @JsonProperty(value = "totp_initial_code") String totpInitialCode,
+            @JsonProperty(value = "password", required = false) String password) {
         this.deviceName = deviceName;
         this.totpCode = totpInitialCode;
         this.password = password;
@@ -30,9 +32,7 @@ public class TwoFactorAuthVerificationData {
     public boolean isValid() {
         return deviceName != null &&
                 totpCode != null &&
-                password != null &&
                 !deviceName.isBlank() &&
-                !totpCode.isBlank() &&
-                !password.isBlank();
+                !totpCode.isBlank();
     }
 }
