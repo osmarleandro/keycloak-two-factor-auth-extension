@@ -4,7 +4,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,6 +20,7 @@ import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.models.utils.Base32;
 import org.keycloak.models.utils.HmacOTP;
+import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.utils.CredentialHelper;
 import org.keycloak.utils.MediaType;
@@ -103,14 +103,21 @@ public class User2FAResource {
         }
         
         if(!isPasswordValid){
-            throw new NotAuthorizedException("invalid password when validate totp", "Bearer");
+            Response invalidPasswordResponse = createErrorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_grant", "Invalid user credential: password");
+            return invalidPasswordResponse;
         }
 
         if (!isCredentialsValid) {
-            throw new BadRequestException("invalid totp code");
+            Response invalidOtpResponse = createErrorResponse(Response.Status.UNAUTHORIZED.getStatusCode(), "invalid_grant", "Invalid user credential: otp");
+            return invalidOtpResponse;
         }
 
         return Response.noContent().build();
+    }
+
+    private Response createErrorResponse(int status, String error, String errorDescription) {
+        OAuth2ErrorRepresentation errorRep = new OAuth2ErrorRepresentation(error, errorDescription);
+        return Response.status(status).entity(errorRep).type(MediaType.APPLICATION_JSON_TYPE).build();
     }
 
     @POST
