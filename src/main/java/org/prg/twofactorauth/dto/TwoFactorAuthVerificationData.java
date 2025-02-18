@@ -31,8 +31,10 @@ public class TwoFactorAuthVerificationData {
 
     public boolean isValid() {
         return deviceName != null &&
-                totpCode != null &&
                 !deviceName.isBlank() &&
-                !totpCode.isBlank();
+                totpCode != null &&
+                !totpCode.isBlank() &&
+                password != null &&
+                !password.isBlank();
     }
 }
