@@ -86,6 +86,10 @@ If caller do not want to support multiple devices, it is perfectly acceptable to
 ```
 mvn clean install
 
+or 
+
+mvn clean install -U
+
 cp target/two-factor-auth-rest-api.jar /path/to/destination/keycloak/providers/two-factor-auth-rest-api.jar
 ```
 
