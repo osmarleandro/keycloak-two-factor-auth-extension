@@ -5,7 +5,11 @@ import org.keycloak.models.UserModel;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 
-import javax.ws.rs.*;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 
 public class TwoFactorAuthRestResource {
 
@@ -26,13 +30,12 @@ public class TwoFactorAuthRestResource {
     }
 
     private UserModel checkPermissionsAndGetUser(final String userid) {
-        if (auth == null) {
-            var auth = new AppAuthManager.BearerTokenAuthenticator(session);
-            auth.authenticate();
+        if (this.auth == null) {
             throw new NotAuthorizedException("Bearer");
-        } else if (auth.getUser().getServiceAccountClientLink() == null) {
+        } else if (this.auth.getUser().getServiceAccountClientLink() == null) {
             throw new ForbiddenException("Not service account");
-        } else if (auth.getToken().getRealmAccess() == null || !auth.getToken().getRealmAccess().isUserInRole("manage-2fa")) {
+        } else if (this.auth.getToken().getRealmAccess() == null ||
+                   !this.auth.getToken().getRealmAccess().isUserInRole("manage-2fa")) {
             throw new ForbiddenException("Does not have realm manage-2fa role");
         }
 

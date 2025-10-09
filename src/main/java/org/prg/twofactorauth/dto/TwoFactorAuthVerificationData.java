@@ -6,11 +6,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class TwoFactorAuthVerificationData {
     private final String deviceName;
     private final String totpCode;
+    private final String password;
 
     @JsonCreator
-    public TwoFactorAuthVerificationData(@JsonProperty(value = "device_name") String deviceName, @JsonProperty(value = "totp_initial_code") String totpInitialCode) {
+    public TwoFactorAuthVerificationData(@JsonProperty(value = "device_name") String deviceName,
+            @JsonProperty(value = "totp_initial_code") String totpInitialCode,
+            @JsonProperty(value = "password", required = false) String password) {
         this.deviceName = deviceName;
         this.totpCode = totpInitialCode;
+        this.password = password;
     }
 
     public String getDeviceName() {
@@ -21,10 +25,16 @@ public class TwoFactorAuthVerificationData {
         return totpCode;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     public boolean isValid() {
         return deviceName != null &&
-                totpCode != null &&
                 !deviceName.isBlank() &&
-                !totpCode.isBlank();
+                totpCode != null &&
+                !totpCode.isBlank() &&
+                password != null &&
+                !password.isBlank();
     }
 }
